@@ -71,6 +71,7 @@ FROM scratch as scripts
 # make the PROD Dockerfile standalone
 ##############################################################################################
 
+
 # The content below is automatically copied from scripts/docker/determine_debian_version_specific_variables.sh
 COPY <<"EOF" /determine_debian_version_specific_variables.sh
 function determine_debian_version_specific_variables() {
@@ -1494,6 +1495,11 @@ COPY --from=scripts entrypoint_prod.sh /entrypoint
 COPY --from=scripts clean-logs.sh /clean-logs
 COPY --from=scripts airflow-scheduler-autorestart.sh /airflow-scheduler-autorestart
 
+RUN mkdir /etc/mysql
+ADD ./utilities/datajoint-entrypoint.sh /datajoint-entrypoint.sh
+COPY --chown=mysql:mysql ./config/my.cnf /etc/mysql/my.cnf
+RUN chmod g+w /etc/mysql/my.cnf
+
 # Make /etc/passwd root-group-writeable so that user can be dynamically added by OpenShift
 # See https://github.com/apache/airflow/issues/9248
 # Set default groups for airflow and root user
@@ -1526,16 +1532,21 @@ RUN chmod u+x /root/bin/pip
 # Start of datajoint snippet
 # --------------------------
 ARG  MYSQL_VER=5.7
-FROM mysql:${MYSQL_VER}
+FROM mysql:5.7
+#${MYSQL_VER}
 
 LABEL maintainerName="Max Myroshnychenko/Raphael Guzman" \
       maintainerEmail="mmyros@gmail.com" \
       maintainerCompany=""
+USER root
 
+RUN \    
+    apt-get install openssl -y 
+RUN \    
+    apt-get install mysql-server -y  
 RUN \
-    apt-get update && \
-    apt-get install openssl -y && \
-    mkdir /mysql_keys && \
+    mkdir /mysql_keys 
+RUN \    
     chown mysql:mysql /mysql_keys
 
 USER mysql
@@ -1562,9 +1573,6 @@ RUN \
 
 USER root   
 
-ADD ./utilities/datajoint-entrypoint.sh /datajoint-entrypoint.sh
-COPY --chown=mysql:mysql ./config/my.cnf /etc/mysql/my.cnf
-RUN chmod g+w /etc/mysql/my.cnf
 ENTRYPOINT ["/datajoint-entrypoint.sh"]
 CMD ["mysqld"]
 HEALTHCHECK       \
