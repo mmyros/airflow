@@ -69,7 +69,7 @@ via :ref:`Building the image <build:build_image>`.
 
 The Apache Airflow image provided as convenience package is optimized for size, and
 it provides just a bare minimal set of the extras and dependencies installed and in most cases
-you want to either extend or customize the image. You can see all possible extras in :doc:`extra-packages-ref`.
+you want to either extend or customize the image. You can see all possible extras in :doc:`apache-airflow:extra-packages-ref`.
 The set of extras used in Airflow Production image are available in the
 `Dockerfile <https://github.com/apache/airflow/blob/2c6c7fdb2308de98e142618836bdf414df9768c8/Dockerfile#L37>`_.
 
